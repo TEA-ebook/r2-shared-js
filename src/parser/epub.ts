@@ -232,6 +232,10 @@ export async function EpubParsePromise(filePath: string): Promise<Publication> {
         const lcplStr = lcplZipData.toString("utf8");
         const lcplJson = global.JSON.parse(lcplStr);
         // debug(lcplJson);
+        if (!(lcplJson.links instanceof Array)) {
+            const linksObject = lcplJson.links;
+            lcplJson.links = Object.keys(linksObject).map((rel: string) => ({rel, ...(linksObject[rel])}));
+        }
         lcpl = TaJsonDeserialize<LCP>(lcplJson, LCP);
         lcpl.ZipPath = lcplZipPath;
         lcpl.JsonSource = lcplStr;
