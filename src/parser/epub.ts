@@ -161,6 +161,19 @@ export function isEPUBlication(urlOrPath: string): EPUBis | undefined {
     return undefined;
 }
 
+export function LcplParse(lcplStr: string, zipPath: string): LCP {
+    const lcplJson = global.JSON.parse(lcplStr);
+    if (!(lcplJson.links instanceof Array)) {
+        const linksObject = lcplJson.links;
+        lcplJson.links = Object.keys(linksObject).map((rel: string) => ({rel, ...(linksObject[rel])}));
+    }
+    const lcpl: LCP = TaJsonDeserialize<LCP>(lcplJson, LCP);
+    lcpl.ZipPath = zipPath;
+    lcpl.JsonSource = lcplStr;
+    lcpl.init();
+    return lcpl;
+}
+
 export async function EpubParsePromise(filePath: string): Promise<Publication> {
 
     const isAnEPUB = isEPUBlication(filePath);
@@ -230,16 +243,7 @@ export async function EpubParsePromise(filePath: string): Promise<Publication> {
         }
 
         const lcplStr = lcplZipData.toString("utf8");
-        const lcplJson = global.JSON.parse(lcplStr);
-        // debug(lcplJson);
-        if (!(lcplJson.links instanceof Array)) {
-            const linksObject = lcplJson.links;
-            lcplJson.links = Object.keys(linksObject).map((rel: string) => ({rel, ...(linksObject[rel])}));
-        }
-        lcpl = TaJsonDeserialize<LCP>(lcplJson, LCP);
-        lcpl.ZipPath = lcplZipPath;
-        lcpl.JsonSource = lcplStr;
-        lcpl.init();
+        lcpl = LcplParse(lcplStr, lcplZipPath);
 
         // breakLength: 100  maxArrayLength: undefined
         // debug(util.inspect(lcpl,
@@ -256,7 +260,7 @@ export async function EpubParsePromise(filePath: string): Promise<Publication> {
         // application/vnd.readium.lcp.license.v1.0+json (NEW)
         // application/vnd.readium.license.status.v1.0+json (LSD)
         const mime = "application/vnd.readium.lcp.license.v1.0+json";
-        publication.AddLink(mime, ["license"], lcpl.ZipPath, undefined);
+        publication.AddLink(mime, ["license"], lcplZipPath, undefined);
     }
 
     let encryption: Encryption | undefined;

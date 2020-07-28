@@ -1,6 +1,6 @@
 {
   "name": "@vivlio/r2-shared-js",
-  "version": "1.0.39-vivlio.1",
+  "version": "1.0.39-vivlio.2",
   "description": "Readium 2 'shared' for NodeJS (TypeScript)",
   "keywords": [
     "readium",
